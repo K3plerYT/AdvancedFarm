@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Juego de Granja Avanzado</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #e6f7d4;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+        h1 {
+            color: #4CAF50;
+            text-align: center;
+            margin-top: 20px;
+        }
+        .container {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            margin: 20px;
+        }
+        .section {
+            background-color: white;
+            border: 2px solid #ddd;
+            padding: 20px;
+            border-radius: 10px;
+            width: 30%;
+            min-width: 300px;
+            box-sizing: border-box;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        h2 {
+            color: #4CAF50;
+            border-bottom: 2px solid #ddd;
+            padding-bottom: 10px;
+        }
+        button {
+            padding: 10px 20px;
+            margin-top: 10px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+            display: inline-block;
+            width: 100%;
+            text-align: center;
+            box-sizing: border-box;
+        }
+        button:hover {
+            opacity: 0.9;
+        }
+        #plant-btn {
+            background-color: #2196F3;
+            color: white;
+        }
+        #grow-btn {
+            background-color: #4CAF50;
+            color: white;
+        }
+        #sell-btn {
+            background-color: #FF5722;
+            color: white;
+        }
+        #buy-seeds-btn {
+            background-color: #FFC107;
+            color: white;
+        }
+        .inventory, .messages {
+            margin: 20px;
+            text-align: center;
+        }
+        .messages {
+            color: red;
+            font-weight: bold;
+            display: none;
+        }
+        .automate-btn {
+            background-color: #795548;
+            color: white;
+        }
+        .select-box {
+            padding: 10px;
+            margin-top: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        /* Estilos del botón de configuración */
+        #settings-btn {
+            background-color: #673AB7;
+            color: white;
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: auto;
+        }
+
+        /* Estilos de la ventana modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 300px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .close-btn {
+            background-color: red;
+            color: white;
+            margin-top: 20px;
+            width: 100%;
+        }
+
+        a {
+            color: #2196F3;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+    <h1 id="title">Juego de Granja Avanzado</h1>
+
+    <div class="container">
+        <!-- Sección del campo -->
+        <div class="section">
+            <h2 id="field-title">Campo</h2>
+            <p id="planted-label">Semillas plantadas: <span id="planted">0</span></p>
+            <p id="gold-planted-label">Semillas doradas plantadas: <span id="gold-planted">0</span></p>
+            <p id="magic-planted-label">Semillas mágicas plantadas: <span id="magic-planted">0</span></p>
+            <button id="plant-btn" onclick="plant('normal')">Plantar semilla normal</button>
+            <button id="plant-btn-gold" onclick="plant('gold')">Plantar semilla dorada</button>
+            <button id="plant-btn-magic" onclick="plant('magic')">Plantar semilla mágica</button>
+            <button id="grow-btn" onclick="grow()">Hacer crecer</button>
+        </div>
+
+        <!-- Sección del mercado -->
+        <div class="section">
+            <h2 id="market-title">Mercado</h2>
+            <p id="harvest-label">Cosechas normales: <span id="harvest">0</span></p>
+            <p id="gold-harvest-label">Cosechas doradas: <span id="gold-harvest">0</span></p>
+            <p id="magic-harvest-label">Cosechas mágicas: <span id="magic-harvest">0</span></p>
+            <button id="sell-btn" onclick="sell()">Vender cosecha</button>
+        </div>
+
+        <!-- Sección del inventario -->
+        <div class="section">
+            <h2 id="inventory-title">Inventario</h2>
+            <p id="money-label">Dinero: $<span id="money">100</span></p>
+            <p id="seeds-label">Semillas normales: <span id="seeds">5</span></p>
+            <p id="gold-seeds-label">Semillas doradas: <span id="gold-seeds">2</span></p>
+            <p id="magic-seeds-label">Semillas mágicas: <span id="magic-seeds">1</span></p>
+            <p id="seed-price-label">Precio de semillas normales: $10</p>
+            <p id="gold-seed-price-label">Precio de semillas doradas: $30</p>
+            <p id="magic-seed-price-label">Precio de semillas mágicas: $100</p>
+            <button id="buy-seeds-btn" onclick="buySeeds('normal')">Comprar semilla normal</button>
+            <button id="buy-seeds-gold-btn" onclick="buySeeds('gold')">Comprar semilla dorada</button>
+            <button id="buy-seeds-magic-btn" onclick="buySeeds('magic')">Comprar semilla mágica</button>
+        </div>
+    </div>
+
+    <!-- Botón para abrir la configuración -->
+    <button id="settings-btn" onclick="openSettings()">⚙️ Configuración</button>
+
+    <!-- Ventana modal de configuración -->
+    <div id="settings-modal" class="modal">
+        <div class="modal-content">
+            <h2 id="settings-title">Configuración</h2>
+
+            <p id="language-label">Idioma:</p>
+            <select id="language-select" class="select-box" onchange="changeLanguage()">
+                <option value="es">Español</option>
+                <option value="en">Inglés</option>
+                <option value="fr">Francés</option>
+                <option value="ru">Ruso</option>
+            </select>
+
+            <p style="margin-top: 20px;">
+                <a id="donate-btn" href="https://www.paypal.com/paypalme/k3pler" target="_blank">Donar</a>
+            </p>
+
+            <button class="close-btn" onclick="closeSettings()">Cerrar</button>
+        </div>
+    </div>
+
+    <div class="messages" id="message-box"></div>
+
+    <script>
+        // Diccionario de traducciones
+        const translations = {
+            en: {
+                title: "Advanced Farm Game",
+                "field-title": "Field",
+                "planted-label": "Planted seeds:",
+                "gold-planted-label": "Planted golden seeds:",
+                "magic-planted-label": "Planted magic seeds:",
+                "market-title": "Market",
+                "harvest-label": "Normal harvests:",
+                "gold-harvest-label": "Golden harvests:",
+                "magic-harvest-label": "Magic harvests:",
+                "inventory-title": "Inventory",
+                "money-label": "Money: $",
+                "seeds-label": "Normal seeds:",
+                "gold-seeds-label": "Golden seeds:",
+                "magic-seeds-label": "Magic seeds:",
+                "seed-price-label": "Price of normal seeds: $10",
+                "gold-seed-price-label": "Price of golden seeds: $30",
+                "magic-seed-price-label": "Price of magic seeds: $100",
+                "plant-btn": "Plant normal seed",
+                "plant-btn-gold": "Plant golden seed",
+                "plant-btn-magic": "Plant magic seed",
+                "grow-btn": "Grow plants",
+                "sell-btn": "Sell harvest",
+                "buy-seeds-btn": "Buy normal seed",
+                "buy-seeds-gold-btn": "Buy golden seed",
+                "buy-seeds-magic-btn": "Buy magic seed",
+                "settings-title": "Settings",
+                "language-label": "Language",
+                "donate-btn": "Donate",
+                "settings-btn": "Settings",
+                "close-btn": "Close"
+            },
+            es: {
+                title: "Juego de Granja Avanzado",
+                "field-title": "Campo",
+                "planted-label": "Semillas plantadas:",
+                "gold-planted-label": "Semillas doradas plantadas:",
+                "magic-planted-label": "Semillas mágicas plantadas:",
+                "market-title": "Mercado",
+                "harvest-label": "Cosechas normales:",
+                "gold-harvest-label": "Cosechas doradas:",
+                "magic-harvest-label": "Cosechas mágicas:",
+                "inventory-title": "Inventario",
+                "money-label": "Dinero: $",
+                "seeds-label": "Semillas normales:",
+                "gold-seeds-label": "Semillas doradas:",
+                "magic-seeds-label": "Semillas mágicas:",
+                "seed-price-label": "Precio de semillas normales: $10",
+                "gold-seed-price-label": "Precio de semillas doradas: $30",
+                "magic-seed-price-label": "Precio de semillas mágicas: $100",
+                "plant-btn": "Plantar semilla normal",
+                "plant-btn-gold": "Plantar semilla dorada",
+                "plant-btn-magic": "Plantar semilla mágica",
+                "grow-btn": "Hacer crecer",
+                "sell-btn": "Vender cosecha",
+                "buy-seeds-btn": "Comprar semilla normal",
+                "buy-seeds-gold-btn": "Comprar semilla dorada",
+                "buy-seeds-magic-btn": "Comprar semilla mágica",
+                "settings-title": "Configuración",
+                "language-label": "Idioma",
+                "donate-btn": "Donar",
+                "settings-btn": "Configuración",
+                "close-btn": "Cerrar"
+            },
+            fr: {
+                title: "Jeu de Ferme Avancé",
+                "field-title": "Champs",
+                "planted-label": "Graines plantées:",
+                "gold-planted-label": "Graines dorées plantées:",
+                "magic-planted-label": "Graines magiques plantées:",
+                "market-title": "Marché",
+                "harvest-label": "Récoltes normales:",
+                "gold-harvest-label": "Récoltes dorées:",
+                "magic-harvest-label": "Récoltes magiques:",
+                "inventory-title": "Inventaire",
+                "money-label": "Argent: $",
+                "seeds-label": "Graines normales:",
+                "gold-seeds-label": "Graines dorées:",
+                "magic-seeds-label": "Graines magiques:",
+                "seed-price-label": "Prix des graines normales: $10",
+                "gold-seed-price-label": "Prix des graines dorées: $30",
+                "magic-seed-price-label": "Prix des graines magiques: $100",
+                "plant-btn": "Planter graine normale",
+                "plant-btn-gold": "Planter graine dorée",
+                "plant-btn-magic": "Planter graine magique",
+                "grow-btn": "Faire pousser",
+                "sell-btn": "Vendre la récolte",
+                "buy-seeds-btn": "Acheter graine normale",
+                "buy-seeds-gold-btn": "Acheter graine dorée",
+                "buy-seeds-magic-btn": "Acheter graine magique",
+                "settings-title": "Paramètres",
+                "language-label": "Langue",
+                "donate-btn": "Faire un don",
+                "settings-btn": "Paramètres",
+                "close-btn": "Fermer"
+            },
+            ru: {
+                title: "Расширенная Ферма",
+                "field-title": "Поле",
+                "planted-label": "Посаженные семена:",
+                "gold-planted-label": "Посаженные золотые семена:",
+                "magic-planted-label": "Посаженные магические семена:",
+                "market-title": "Рынок",
+                "harvest-label": "Обычные урожаи:",
+                "gold-harvest-label": "Золотые урожаи:",
+                "magic-harvest-label": "Магические урожаи:",
+                "inventory-title": "Инвентарь",
+                "money-label": "Деньги: $",
+                "seeds-label": "Обычные семена:",
+                "gold-seeds-label": "Золотые семена:",
+                "magic-seeds-label": "Магические семена:",
+                "seed-price-label": "Цена обычных семян: $10",
+                "gold-seed-price-label": "Цена золотых семян: $30",
+                "magic-seed-price-label": "Цена магических семян: $100",
+                "plant-btn": "Посадить обычное семя",
+                "plant-btn-gold": "Посадить золотое семя",
+                "plant-btn-magic": "Посадить магическое семя",
+                "grow-btn": "Вырастить",
+                "sell-btn": "Продать урожай",
+                "buy-seeds-btn": "Купить обычное семя",
+                "buy-seeds-gold-btn": "Купить золотое семя",
+                "buy-seeds-magic-btn": "Купить магическое семя",
+                "settings-title": "Настройки",
+                "language-label": "Язык",
+                "donate-btn": "Пожертвовать",
+                "settings-btn": "Настройки",
+                "close-btn": "Закрыть"
+            }
+        };
+
+        let currentLanguage = 'es';
+        let money = 100;
+        let seeds = 5;
+        let goldSeeds = 2;
+        let magicSeeds = 1;
+        let planted = 0;
+        let goldPlanted = 0;
+        let magicPlanted = 0;
+        let harvest = 0;
+        let goldHarvest = 0;
+        let magicHarvest = 0;
+
+        function changeLanguage() {
+            currentLanguage = document.getElementById('language-select').value;
+            applyTranslations();
+        }
+
+        function applyTranslations() {
+            document.getElementById('title').innerText = translations[currentLanguage]['title'];
+            document.getElementById('field-title').innerText = translations[currentLanguage]['field-title'];
+            document.getElementById('planted-label').innerText = translations[currentLanguage]['planted-label'] + " " + planted;
+            document.getElementById('gold-planted-label').innerText = translations[currentLanguage]['gold-planted-label'] + " " + goldPlanted;
+            document.getElementById('magic-planted-label').innerText = translations[currentLanguage]['magic-planted-label'] + " " + magicPlanted;
+            document.getElementById('market-title').innerText = translations[currentLanguage]['market-title'];
+            document.getElementById('harvest-label').innerText = translations[currentLanguage]['harvest-label'] + " " + harvest;
+            document.getElementById('gold-harvest-label').innerText = translations[currentLanguage]['gold-harvest-label'] + " " + goldHarvest;
+            document.getElementById('magic-harvest-label').innerText = translations[currentLanguage]['magic-harvest-label'] + " " + magicHarvest;
+            document.getElementById('inventory-title').innerText = translations[currentLanguage]['inventory-title'];
+            document.getElementById('money-label').innerText = translations[currentLanguage]['money-label'] + money;
+            document.getElementById('seeds-label').innerText = translations[currentLanguage]['seeds-label'] + " " + seeds;
+            document.getElementById('gold-seeds-label').innerText = translations[currentLanguage]['gold-seeds-label'] + " " + goldSeeds;
+            document.getElementById('magic-seeds-label').innerText = translations[currentLanguage]['magic-seeds-label'] + " " + magicSeeds;
+            document.getElementById('seed-price-label').innerText = translations[currentLanguage]['seed-price-label'];
+            document.getElementById('gold-seed-price-label').innerText = translations[currentLanguage]['gold-seed-price-label'];
+            document.getElementById('magic-seed-price-label').innerText = translations[currentLanguage]['magic-seed-price-label'];
+            document.getElementById('plant-btn').innerText = translations[currentLanguage]['plant-btn'];
+            document.getElementById('plant-btn-gold').innerText = translations[currentLanguage]['plant-btn-gold'];
+            document.getElementById('plant-btn-magic').innerText = translations[currentLanguage]['plant-btn-magic'];
+            document.getElementById('grow-btn').innerText = translations[currentLanguage]['grow-btn'];
+            document.getElementById('sell-btn').innerText = translations[currentLanguage]['sell-btn'];
+            document.getElementById('buy-seeds-btn').innerText = translations[currentLanguage]['buy-seeds-btn'];
+            document.getElementById('buy-seeds-gold-btn').innerText = translations[currentLanguage]['buy-seeds-gold-btn'];
+            document.getElementById('buy-seeds-magic-btn').innerText = translations[currentLanguage]['buy-seeds-magic-btn'];
+            document.getElementById('settings-title').innerText = translations[currentLanguage]['settings-title'];
+            document.getElementById('language-label').innerText = translations[currentLanguage]['language-label'];
+            document.getElementById('donate-btn').innerText = translations[currentLanguage]['donate-btn'];
+            document.getElementById('settings-btn').innerText = translations[currentLanguage]['settings-btn'];
+            document.getElementById('close-btn').innerText = translations[currentLanguage]['close-btn'];
+        }
+
+        function plant(type) {
+            if (type === 'normal' && seeds > 0) {
+                seeds--;
+                planted++;
+            } else if (type === 'gold' && goldSeeds > 0) {
+                goldSeeds--;
+                goldPlanted++;
+            } else if (type === 'magic' && magicSeeds > 0) {
+                magicSeeds--;
+                magicPlanted++;
+            } else {
+                showMessage("No tienes semillas disponibles.");
+            }
+            updateLabels();
+        }
+
+        function grow() {
+            harvest += planted;
+            goldHarvest += goldPlanted * 2;
+            magicHarvest += magicPlanted * 5;
+            planted = 0;
+            goldPlanted = 0;
+            magicPlanted = 0;
+            updateLabels();
+        }
+
+        function sell() {
+            money += harvest * 5; // Cada cosecha normal vale $5
+            money += goldHarvest * 15; // Cada cosecha dorada vale $15
+            money += magicHarvest * 50; // Cada cosecha mágica vale $50
+            harvest = 0;
+            goldHarvest = 0;
+            magicHarvest = 0;
+            updateLabels();
+        }
+
+        function buySeeds(type) {
+            if (type === 'normal' && money >= 10) {
+                seeds++;
+                money -= 10;
+            } else if (type === 'gold' && money >= 30) {
+                goldSeeds++;
+                money -= 30;
+            } else if (type === 'magic' && money >= 100) {
+                magicSeeds++;
+                money -= 100;
+            } else {
+                showMessage("No tienes suficiente dinero.");
+            }
+            updateLabels();
+        }
+
+        function showMessage(message) {
+            const messageBox = document.getElementById('message-box');
+            messageBox.innerText = message;
+            messageBox.style.display = 'block';
+            setTimeout(() => messageBox.style.display = 'none', 3000);
+        }
+
+        function openSettings() {
+            document.getElementById('settings-modal').style.display = 'block';
+        }
+
+        function closeSettings() {
+            document.getElementById('settings-modal').style.display = 'none';
+        }
+
+        function updateLabels() {
+            applyTranslations();
+        }
+
+        // Inicializa la interfaz con los valores actuales
+        updateLabels();
+
+    </script>
+</body>
+</html>
